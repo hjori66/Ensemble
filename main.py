@@ -1,17 +1,48 @@
-from utils import *
 import argparse
+import torch
+import tqdm
+
+from utils import generate_data, draw_graph, plot_loss
+from model import MLP
 
 
 def main(args):
-    x = np.linspace(-6,6,100).reshape(100,1) # Test data for regression
-    x_set, y_set = generate_data() # Train data for regression
+    x = np.linspace(-6, 6, 100).reshape(100, 1)  # Test data for regression
+    x_set, y_set = generate_data()  # Train data for regression
     epochs = args.epochs
     batch_size = args.batch_size
-    epsilon = 0.01 # Coeffiecient for 'fast gredient sign method'
+    epsilon = 0.01  # Coeffiecient for 'fast gredient sign method'
+
+    num_hidden = 256
+    num_layer = 1
+    x_tensor = torch.cuda.LongTensor(x_set)
+    y_tensor = torch.cuda.LongTensor(y_set)
 
     # Training an ensemble of 5 networks(MLPS) with MSE
     # TODO:Draw Fig1.1
     if args.fig == 1:
+        means = []
+        s = []
+        for _ in range(5):
+            model = MLP(x_tensor.size(1), num_hidden, num_layer)
+            model.cuda()
+
+            loss_fn = torch.nn.MSE()
+            optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+
+            train_losses = []
+            for _ in tqdm(range(args.epochs), desc='fig_1 training...'):
+                total_train_loss = 0
+
+                optimizer.zero_grad()
+                y_pred = model.forward(x_tensor)
+                loss = loss_fn(y_pred, y_tensor)
+                loss.backward()
+                optimizer.step()
+
+                total_train_loss += loss.item()
+
+                train_losses.append(total_train_loss)
 
         # Have to calculte predicted mean and std
         # 'mean' have to be a numpy array with shape [100,1]
