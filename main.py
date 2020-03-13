@@ -10,6 +10,7 @@ np.random.seed(1)
 torch.cuda.manual_seed(1)
 torch.manual_seed(1)
 
+
 def main(args):
     x = np.linspace(-6, 6, 100).reshape(100, 1)  # Test data for regression
     x_set, y_set = generate_data()  # Train data for regression
@@ -196,7 +197,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--epochs',
         type=int,
-        default=10000)
+        default=1000)
     parser.add_argument(
         '--batch_size',
         type=int,
